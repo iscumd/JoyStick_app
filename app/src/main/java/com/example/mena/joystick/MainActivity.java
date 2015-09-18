@@ -171,25 +171,25 @@ public class MainActivity extends Activity implements OnTouchListener {
         });
 
 
-//        //Get ip-address to set-up connection
-//        final AlertDialog.Builder alert = new AlertDialog.Builder(
-//                context);
-//        alert.setTitle("Connection Set-Up");
-//        alert.setMessage("Enter IP Address:");
-//        // Setting an EditText view to get user input
-//        final EditText input = new EditText(context);
-//        alert.setView(input);
-//        alert.setPositiveButton("Ok",
-//                new DialogInterface.OnClickListener() {
-//                    public void onClick(DialogInterface dialog,
-//                                        int whichButton) {
-//                        ipaddr = input.getText().toString();
-//                    }
-//
-//
-//                });
-//        AlertDialog build = alert.create();
-//        build.show();
+        //Get ip-address to set-up connection
+        final AlertDialog.Builder alert = new AlertDialog.Builder(
+                context);
+        alert.setTitle("Connection Set-Up");
+        alert.setMessage("Enter IP Address:");
+        // Setting an EditText view to get user input
+        final EditText input = new EditText(context);
+        alert.setView(input);
+        alert.setPositiveButton("Ok",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog,
+                                        int whichButton) {
+                        ipaddr = input.getText().toString();
+                    }
+
+
+                });
+        AlertDialog build = alert.create();
+        build.show();
 
 
     }
@@ -449,10 +449,11 @@ public class MainActivity extends Activity implements OnTouchListener {
 
                 }
 
-                message = ""+ NewXValue +", " + NewYValue;
+                message = ""+ NewXValue +"," + NewYValue;
                // Log.v("ME","message= "+ message);
 
-                ipaddr = "192.168.1.89";
+                //ipaddr = "192.168.1.204";
+              //  ipaddr = "192.168.1.89";
 
                 try {
                     datagramSocket = new DatagramSocket(SERVERPORT);
