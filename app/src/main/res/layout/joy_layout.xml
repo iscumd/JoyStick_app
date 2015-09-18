@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#336699">
+    <LinearLayout
+        android:id="@+id/data_area"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="230dp"
+        android:layout_weight="1">
+        <include layout="@layout/data_layout"/>
+    </LinearLayout>
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        />
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <LinearLayout
+            android:id="@+id/joystick_area"
+            android:orientation="vertical"
+            android:layout_width="240dp"
+            android:layout_height="230dp">
+            </LinearLayout>
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"/>
+        <LinearLayout
+            android:id="@+id/dpad_area"
+            android:orientation="vertical"
+            android:layout_marginTop="30dp"
+            android:layout_marginRight="30dp"
+            android:layout_width="170dp"
+            android:layout_height="170dp">
+            <include layout="@layout/dpad"/>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>
