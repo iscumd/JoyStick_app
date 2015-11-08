@@ -41,7 +41,7 @@
         <Button
             android:id="@+id/dbutton_1"
             android:background="#000000"
-            android:text="Grab Sample"
+            android:text="Fill Sample"
             android:textColor="#FFFFFF"
             android:layout_width="128dp"
             android:layout_height="90dp" />
