@@ -2,11 +2,18 @@
 <items version="2" >
 
     <item
-        jar="/Users/Mena/Downloads/JoyStick-master/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/22.1.1/jars/classes.jar"
+        jar="/Users/Mena/Downloads/JoyStick_app-master/app/build/intermediates/exploded-aar/com.android.support/support-v4/22.1.1/jars/classes.jar"
         jumboMode="false"
         revision="22.0.1"
-        sha1="a3ff3c506644c820eb2bdf06e8339f72be578551">
-        <dex dex="/Users/Mena/Downloads/JoyStick-master/app/build/intermediates/pre-dexed/debug/classes-7ee96c7b446269c23aadbf819ffa4912a2d79e85.jar" />
+        sha1="c95ba8152923e4872e86a82cfcba9a51c0214328">
+        <dex dex="/Users/Mena/Downloads/JoyStick_app-master/app/build/intermediates/pre-dexed/debug/classes-77f022548baabb759ace87701b57eb230d63bc74.jar" />
+    </item>
+    <item
+        jar="/Users/Mena/Downloads/JoyStick_app-master/app/build/intermediates/exploded-aar/com.android.support/support-v4/22.1.1/jars/libs/internal_impl-22.1.1.jar"
+        jumboMode="false"
+        revision="22.0.1"
+        sha1="9e070ad32b2700b0343e8e0cccc437733d91ba3a">
+        <dex dex="/Users/Mena/Downloads/JoyStick_app-master/app/build/intermediates/pre-dexed/debug/internal_impl-22.1.1-d3d2e0be0570fb69e5d0b480f079b6d4c1bb5459.jar" />
     </item>
     <item
         jar="/Users/Mena/Library/Android/sdk/extras/android/m2repository/com/android/support/support-annotations/22.1.1/support-annotations-22.1.1.jar"
@@ -21,6 +28,20 @@
         revision="22.0.1"
         sha1="c95ba8152923e4872e86a82cfcba9a51c0214328">
         <dex dex="/Users/Mena/Downloads/JoyStick-master/app/build/intermediates/pre-dexed/debug/classes-0f1fb5f5446ee8b7092f9f7a73d574a52c38bb9e.jar" />
+    </item>
+    <item
+        jar="/Users/Mena/Downloads/JoyStick_app-master/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/22.1.1/jars/classes.jar"
+        jumboMode="false"
+        revision="22.0.1"
+        sha1="a3ff3c506644c820eb2bdf06e8339f72be578551">
+        <dex dex="/Users/Mena/Downloads/JoyStick_app-master/app/build/intermediates/pre-dexed/debug/classes-611acb5f4256f4bf687a416d5c5a263ff04e4281.jar" />
+    </item>
+    <item
+        jar="/Users/Mena/Downloads/JoyStick-master/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/22.1.1/jars/classes.jar"
+        jumboMode="false"
+        revision="22.0.1"
+        sha1="a3ff3c506644c820eb2bdf06e8339f72be578551">
+        <dex dex="/Users/Mena/Downloads/JoyStick-master/app/build/intermediates/pre-dexed/debug/classes-7ee96c7b446269c23aadbf819ffa4912a2d79e85.jar" />
     </item>
     <item
         jar="/Users/Mena/Downloads/JoyStick-master/app/build/intermediates/exploded-aar/com.android.support/support-v4/22.1.1/jars/libs/internal_impl-22.1.1.jar"

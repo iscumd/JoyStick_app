@@ -10,6 +10,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.TransitionDrawable;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.support.v4.view.MotionEventCompat;
@@ -61,11 +63,12 @@ public class MainActivity extends Activity implements OnTouchListener {
     float cx_leftPad, cx_rightPad, cy_leftPad, cy_rightPad;
     float cx_leftBall, cx_rightBall, cy_leftBall, cy_rightBall;
     public static final int SERVERPORT = 5000;
-    static String ipaddr ="";
+    static String ipaddr;
     String message ="";
     InetAddress serverAddr;
     DatagramSocket datagramSocket;
     LinearLayout dataArea,joyStickArea, dPadArea;
+    final boolean[] check = {false, false};
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,6 +89,7 @@ public class MainActivity extends Activity implements OnTouchListener {
         p2 = new Paint();
         p2.setColor(Color.rgb(36,107,36));
 
+
         // Combine Layouts
         setContentView(R.layout.joy_layout);
         LinearLayout dataArea = (LinearLayout)findViewById(R.id.data_area);     // To display the data buttons
@@ -98,7 +102,7 @@ public class MainActivity extends Activity implements OnTouchListener {
         ImageButton b_down = (ImageButton) findViewById(R.id.button_down);
         ImageButton b_up = (ImageButton) findViewById(R.id.button_up);
         ImageButton b_left = (ImageButton) findViewById(R.id.button_left);
-        ImageButton b_right = (ImageButton) findViewById(R.id.button_right);
+        final ImageButton b_right = (ImageButton) findViewById(R.id.button_right);
 
 
         // D-pad button on-click listeners
@@ -107,33 +111,82 @@ public class MainActivity extends Activity implements OnTouchListener {
                 // Perform action on click
                 v.playSoundEffect(SoundEffectConstants.CLICK);
 
+                new Thread(new Runnable(){
+                    @Override
+                    public void run() {
+                        try {
+                            // Send button click over UDP
+                            UDP("DOWN");
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                }).start();
+
             }
         });
         b_up.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 // Perform action on click
                 v.playSoundEffect(SoundEffectConstants.CLICK);
+
+                new Thread(new Runnable(){
+                    @Override
+                    public void run() {
+                        try {
+                            // Send button click over UDP
+                            UDP("UP");
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                }).start();
             }
         });
         b_left.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 // Perform action on click
                 v.playSoundEffect(SoundEffectConstants.CLICK);
+
+                new Thread(new Runnable(){
+                    @Override
+                    public void run() {
+                        try {
+                            // Send button click over UDP
+                            UDP("LEFT");
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                }).start();
             }
         });
         b_right.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 // Perform action on click
                 v.playSoundEffect(SoundEffectConstants.CLICK);
+
+                new Thread(new Runnable(){
+                    @Override
+                    public void run() {
+                        try {
+                            // Send button click over UDP
+                            UDP("RIGHT");
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                }).start();
             }
         });
 
+
         //Define other data buttons
         Button dash = (Button) findViewById(R.id.dbutton_0);
-        Button grab = (Button) findViewById(R.id.dbutton_1);
-        Button test = (Button) findViewById(R.id.dbutton_2);
-        Button gps = (Button) findViewById(R.id.dbutton_3);
-        Button cam = (Button) findViewById(R.id.dbutton_4);
+        final Button grab = (Button) findViewById(R.id.dbutton_1);
+        final Button test = (Button) findViewById(R.id.dbutton_2);
+        final Button gps = (Button) findViewById(R.id.dbutton_3);
+        final Button cam = (Button) findViewById(R.id.dbutton_4);
 
         //Set on-click listeners for data buttons
         dash.setOnClickListener(new View.OnClickListener() {
@@ -147,45 +200,168 @@ public class MainActivity extends Activity implements OnTouchListener {
         });
         grab.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                // Perform action on click
+                // GRAB WATER SAMPLE
+
+                ColorDrawable[] color = {new ColorDrawable(Color.BLUE), new ColorDrawable(Color.BLACK)};
+                TransitionDrawable trans = new TransitionDrawable(color);
+                new Thread(new Runnable(){
+                    @Override
+                    public void run() {
+                        try {
+                            // Send button click over UDP
+                            UDP("GRAB");
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                }).start();
+
+                //This will work also on old devices. The latest API says you have to use setBackground instead.
+                grab.setBackgroundDrawable(trans);
+                trans.startTransition(1000);
                 v.playSoundEffect(SoundEffectConstants.CLICK);
+
             }
         });
         test.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                // Perform action on click
+                // TEST WATER SAMPLES
+
+                ColorDrawable[] color = {new ColorDrawable(Color.BLUE), new ColorDrawable(Color.BLACK)};
+                TransitionDrawable trans = new TransitionDrawable(color);
+                new Thread(new Runnable(){
+                    @Override
+                    public void run() {
+                        try {
+                            // Send button click over UDP
+                            UDP("TEST");
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                }).start();
+                //This will work also on old devices. The latest API says you have to use setBackground instead.
+                test.setBackgroundDrawable(trans);
+                trans.startTransition(1000);
                 v.playSoundEffect(SoundEffectConstants.CLICK);
+
             }
+
         });
         gps.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                // COLLECT GPS COORDINATES
+
+                if(check[0] == true)
+                {
+                    // GPS collection is turned off
+                    gps.setBackgroundColor(Color.BLACK);
+                    check[0] = false;
+
+                    new Thread(new Runnable(){
+                        @Override
+                        public void run() {
+                            try {
+                                // Send button click over UDP
+                                UDP("GPS_OFF");
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    }).start();
+
+                }
                 // Perform action on click
-                v.playSoundEffect(SoundEffectConstants.CLICK);
+                else {
+                    // GPS collection is turned on
+                    check[0] = true;
+                    gps.setBackgroundColor(Color.BLUE);
+                    v.playSoundEffect(SoundEffectConstants.CLICK);
+                    new Thread(new Runnable(){
+                        @Override
+                        public void run() {
+                            try {
+                                // Send button click over UDP
+                                UDP("GPS_ON");
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    }).start();
+                }
             }
         });
+
+
         cam.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                // VIEW CAMERA FEED
+
+                if(check[1] == true)
+                {
+                    // CAM FEED is turned off
+                    cam.setBackgroundColor(Color.BLACK);
+                    check[1] = false;
+
+                    new Thread(new Runnable(){
+                        @Override
+                        public void run() {
+                            try {
+                                // Send button click over UDP
+                                UDP("CAM_OFF");
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    }).start();
+
+                }
                 // Perform action on click
-                v.playSoundEffect(SoundEffectConstants.CLICK);
+                else {
+
+                    // CAM FEED is turned on
+                    check[1] = true;
+                    cam.setBackgroundColor(Color.BLUE);
+                    v.playSoundEffect(SoundEffectConstants.CLICK);
+
+
+                    new Thread(new Runnable(){
+                        @Override
+                        public void run() {
+                            try {
+                                // Send button click over UDP
+                                UDP("CAM_ON");
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    }).start();
+                }
             }
         });
 
-
         //Get ip-address to set-up connection
+
+
         final AlertDialog.Builder alert = new AlertDialog.Builder(
                 context);
-        alert.setTitle("Connection Set-Up");
+        alert.setTitle("WiFi Connection Set-Up");
+        alert.setCancelable(false);
         alert.setMessage("Enter IP Address:");
         // Setting an EditText view to get user input
         final EditText input = new EditText(context);
         alert.setView(input);
+        alert.setIcon(R.drawable.wifi);
         alert.setPositiveButton("Ok",
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog,
                                         int whichButton) {
-                        ipaddr = input.getText().toString();
+                        if(input.getText().toString().isEmpty()){
+                            ipaddr = "192.168.1.89";
+                        }
+                        else
+                            ipaddr = input.getText().toString();
                     }
-
 
                 });
         AlertDialog build = alert.create();
@@ -362,7 +538,22 @@ public class MainActivity extends Activity implements OnTouchListener {
         }
 
     }
+    public void UDP (String message) {
 
+        try {
+            datagramSocket = new DatagramSocket(SERVERPORT);
+            serverAddr = InetAddress.getByName(ipaddr);
+            DatagramPacket packet = new DatagramPacket(message.getBytes(), message.length(),serverAddr,SERVERPORT);
+            datagramSocket.send(packet);
+            datagramSocket.close();
+        } catch (UnknownHostException e1) {
+            e1.printStackTrace();
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+
+
+    }
     public class DrawJoyStick extends SurfaceView implements Runnable {
 
         Thread t = null;
@@ -450,23 +641,9 @@ public class MainActivity extends Activity implements OnTouchListener {
                 }
 
                 message = ""+ NewXValue +"," + NewYValue;
-               // Log.v("ME","message= "+ message);
+                //Log.v("ME","message= "+ ipaddr);
 
-                //ipaddr = "192.168.1.204";
-              //  ipaddr = "192.168.1.89";
-
-                try {
-                    datagramSocket = new DatagramSocket(SERVERPORT);
-                    serverAddr = InetAddress.getByName(ipaddr);
-                    DatagramPacket packet = new DatagramPacket(message.getBytes(), message.length(),serverAddr,SERVERPORT);
-                    datagramSocket.send(packet);
-                    datagramSocket.close();
-                } catch (UnknownHostException e1) {
-                    e1.printStackTrace();
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-
+                UDP(message);
                 holder.unlockCanvasAndPost(c);
 
             }
