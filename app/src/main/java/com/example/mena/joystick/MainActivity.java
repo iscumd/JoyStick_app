@@ -2,6 +2,7 @@ package com.example.mena.joystick;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -14,6 +15,10 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.net.Uri;
+import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -35,12 +40,14 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Toast;
+import android.widget.VideoView;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.List;
 
 import static android.view.View.OnTouchListener;
 
@@ -48,6 +55,7 @@ import static android.view.View.OnTouchListener;
 public class MainActivity extends Activity implements OnTouchListener {
 
     DrawJoyStick joystick;
+    VideoView vidView;
     Bitmap ball, pad;
     Paint p1, p2;
     float x_leftStick, y_leftStick, x_rightStick, y_rightStick;
@@ -64,11 +72,16 @@ public class MainActivity extends Activity implements OnTouchListener {
     float cx_leftBall, cx_rightBall, cy_leftBall, cy_rightBall;
     public static final int SERVERPORT = 5000;
     static String ipaddr;
+    static String defaultIPaddr = "192.168.1.89";
     String message ="";
     InetAddress serverAddr;
     DatagramSocket datagramSocket;
     LinearLayout dataArea,joyStickArea, dPadArea;
-    final boolean[] check = {false, false};
+    final boolean[] check = {false, false, false, false};
+    String cam_url = "http://10.5.5.9:8080/live/amba.m3u8";
+    String goproSSID = "GOPRO-BP-D89685D2287a" ;
+    String gopronetworkPass = "groprohero";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -98,12 +111,18 @@ public class MainActivity extends Activity implements OnTouchListener {
         LinearLayout dPadArea = (LinearLayout)findViewById(R.id.dpad_area);    // To display dPad
 
 
-        // Define D-pad buttons
+        // Declare D-pad buttons
         ImageButton b_down = (ImageButton) findViewById(R.id.button_down);
         ImageButton b_up = (ImageButton) findViewById(R.id.button_up);
         ImageButton b_left = (ImageButton) findViewById(R.id.button_left);
         final ImageButton b_right = (ImageButton) findViewById(R.id.button_right);
 
+
+        //Define camera region
+        vidView = (VideoView)findViewById(R.id.cam_region);
+        vidView.setVisibility(View.INVISIBLE);
+
+        // Button Definitions
 
         // D-pad button on-click listeners
         b_down.setOnClickListener(new View.OnClickListener() {
@@ -181,12 +200,13 @@ public class MainActivity extends Activity implements OnTouchListener {
         });
 
 
-        //Define other data buttons
+        //Declare other data buttons
         Button dash = (Button) findViewById(R.id.dbutton_0);
-        final Button grab = (Button) findViewById(R.id.dbutton_1);
+        final Button fill = (Button) findViewById(R.id.dbutton_1);
         final Button test = (Button) findViewById(R.id.dbutton_2);
         final Button gps = (Button) findViewById(R.id.dbutton_3);
         final Button cam = (Button) findViewById(R.id.dbutton_4);
+
 
         //Set on-click listeners for data buttons
         dash.setOnClickListener(new View.OnClickListener() {
@@ -198,65 +218,129 @@ public class MainActivity extends Activity implements OnTouchListener {
 
             }
         });
-        grab.setOnClickListener(new View.OnClickListener() {
+// On - Off button
+//        grab.setOnClickListener(new View.OnClickListener() {
+//            public void onClick(View v) {
+//                // GRAB WATER SAMPLE
+//
+//                ColorDrawable[] color = {new ColorDrawable(Color.BLUE), new ColorDrawable(Color.BLACK)};
+//                TransitionDrawable trans = new TransitionDrawable(color);
+//                new Thread(new Runnable(){
+//                    @Override
+//                    public void run() {
+//                        try {
+//                            // Send button click over UDP
+//                            UDP("GRAB");
+//                        } catch (Exception ex) {
+//                            ex.printStackTrace();
+//                        }
+//                    }
+//                }).start();
+//
+//                //This will work also on old devices. The latest API says you have to use setBackground instead.
+//                grab.setBackgroundDrawable(trans);
+//                trans.startTransition(1000);
+//                v.playSoundEffect(SoundEffectConstants.CLICK);
+//
+//            }
+//        });
+        fill.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                // GRAB WATER SAMPLE
+                // FILL WATER SAMPLE
 
-                ColorDrawable[] color = {new ColorDrawable(Color.BLUE), new ColorDrawable(Color.BLACK)};
-                TransitionDrawable trans = new TransitionDrawable(color);
-                new Thread(new Runnable(){
-                    @Override
-                    public void run() {
-                        try {
-                            // Send button click over UDP
-                            UDP("GRAB");
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
+                if(check[0] == true)
+                {
+                    // Fill water sample is turned off
+                    fill.setBackgroundColor(Color.BLACK);
+                    check[0] = false;
+
+                    new Thread(new Runnable(){
+                        @Override
+                        public void run() {
+                            try {
+                                // Send button click over UDP
+                                UDP("FILL_OFF");
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                            }
                         }
-                    }
-                }).start();
+                    }).start();
 
-                //This will work also on old devices. The latest API says you have to use setBackground instead.
-                grab.setBackgroundDrawable(trans);
-                trans.startTransition(1000);
-                v.playSoundEffect(SoundEffectConstants.CLICK);
-
+                }
+                // Perform action on click
+                else {
+                    // Fill water sample is turned on
+                    check[0] = true;
+                    fill.setBackgroundColor(Color.BLUE);
+                    v.playSoundEffect(SoundEffectConstants.CLICK);
+                    new Thread(new Runnable(){
+                        @Override
+                        public void run() {
+                            try {
+                                // Send button click over UDP
+                                UDP("FILL_ON");
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    }).start();
+                }
             }
         });
+
         test.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 // TEST WATER SAMPLES
 
-                ColorDrawable[] color = {new ColorDrawable(Color.BLUE), new ColorDrawable(Color.BLACK)};
-                TransitionDrawable trans = new TransitionDrawable(color);
-                new Thread(new Runnable(){
-                    @Override
-                    public void run() {
-                        try {
-                            // Send button click over UDP
-                            UDP("TEST");
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
+                if(check[1] == true)
+                {
+                    // TEST sample collection is turned off
+                    test.setBackgroundColor(Color.BLACK);
+                    check[1] = false;
+
+                    new Thread(new Runnable(){
+                        @Override
+                        public void run() {
+                            try {
+                                // Send button click over UDP
+                                UDP("TEST_OFF");
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                            }
                         }
-                    }
-                }).start();
-                //This will work also on old devices. The latest API says you have to use setBackground instead.
-                test.setBackgroundDrawable(trans);
-                trans.startTransition(1000);
-                v.playSoundEffect(SoundEffectConstants.CLICK);
+                    }).start();
 
+                }
+                // Perform action on click
+                else {
+                    // TEST sample collection is turned on
+                    check[1] = true;
+                    test.setBackgroundColor(Color.BLUE);
+                    v.playSoundEffect(SoundEffectConstants.CLICK);
+                    new Thread(new Runnable(){
+                        @Override
+                        public void run() {
+                            try {
+                                // Send button click over UDP
+                                UDP("TEST_ON");
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    }).start();
+                }
             }
-
         });
+
         gps.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 // COLLECT GPS COORDINATES
 
-                if(check[0] == true)
+                if(check[2] == true)
                 {
                     // GPS collection is turned off
                     gps.setBackgroundColor(Color.BLACK);
-                    check[0] = false;
+                    check[2] = false;
 
                     new Thread(new Runnable(){
                         @Override
@@ -274,7 +358,7 @@ public class MainActivity extends Activity implements OnTouchListener {
                 // Perform action on click
                 else {
                     // GPS collection is turned on
-                    check[0] = true;
+                    check[2] = true;
                     gps.setBackgroundColor(Color.BLUE);
                     v.playSoundEffect(SoundEffectConstants.CLICK);
                     new Thread(new Runnable(){
@@ -296,46 +380,38 @@ public class MainActivity extends Activity implements OnTouchListener {
         cam.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 // VIEW CAMERA FEED
+                
+                WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
+                WifiInfo wifiInfo = wifiManager.getConnectionInfo();
 
-                if(check[1] == true)
+                if(check[3] == true)
                 {
                     // CAM FEED is turned off
                     cam.setBackgroundColor(Color.BLACK);
-                    check[1] = false;
+                    check[3] = false;
+                    if (vidView != null) {
+                        vidView.setVisibility(View.INVISIBLE);
+                        vidView.suspend();
+                    }
 
-                    new Thread(new Runnable(){
-                        @Override
-                        public void run() {
-                            try {
-                                // Send button click over UDP
-                                UDP("CAM_OFF");
-                            } catch (Exception ex) {
-                                ex.printStackTrace();
-                            }
-                        }
-                    }).start();
 
                 }
                 // Perform action on click
                 else {
 
                     // CAM FEED is turned on
-                    check[1] = true;
+                    check[3] = true;
                     cam.setBackgroundColor(Color.BLUE);
                     v.playSoundEffect(SoundEffectConstants.CLICK);
+                    WifiConfiguration(); // Connects to Go Pro Camera's Wifi Connection
+                    if (vidView != null && wifiInfo.getSSID().contains(goproSSID)) {
+                        vidView.setVisibility(View.VISIBLE);
+                        Uri vidUri = Uri.parse(cam_url);
+                        vidView.setVideoURI(vidUri);
+                        vidView.start();
+                    }
 
 
-                    new Thread(new Runnable(){
-                        @Override
-                        public void run() {
-                            try {
-                                // Send button click over UDP
-                                UDP("CAM_ON");
-                            } catch (Exception ex) {
-                                ex.printStackTrace();
-                            }
-                        }
-                    }).start();
                 }
             }
         });
@@ -357,7 +433,7 @@ public class MainActivity extends Activity implements OnTouchListener {
                     public void onClick(DialogInterface dialog,
                                         int whichButton) {
                         if(input.getText().toString().isEmpty()){
-                            ipaddr = "192.168.1.89";
+                            ipaddr = defaultIPaddr;
                         }
                         else
                             ipaddr = input.getText().toString();
@@ -385,7 +461,6 @@ public class MainActivity extends Activity implements OnTouchListener {
         joystick.resume();
 
     }
-
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
@@ -538,7 +613,27 @@ public class MainActivity extends Activity implements OnTouchListener {
         }
 
     }
-    public void UDP (String message) {
+
+    public void WifiConfiguration(){
+
+        WifiManager wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        WifiConfiguration wc = new WifiConfiguration();
+        wc.SSID = "\"GOPRO-BP-D89685D2287a\"";
+        wc.preSharedKey  = "\"goprohero\"";
+        wc.hiddenSSID = true;
+        wc.status = WifiConfiguration.Status.ENABLED;
+        wc.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
+        wc.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
+        wc.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
+        wc.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
+        wc.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
+        wc.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
+        int res = wifi.addNetwork(wc);
+        boolean b = wifi.enableNetwork(res, true);
+        wifi.saveConfiguration();
+    }
+
+    public void UDP(String message) {
 
         try {
             datagramSocket = new DatagramSocket(SERVERPORT);
@@ -554,6 +649,7 @@ public class MainActivity extends Activity implements OnTouchListener {
 
 
     }
+
     public class DrawJoyStick extends SurfaceView implements Runnable {
 
         Thread t = null;
@@ -652,6 +748,9 @@ public class MainActivity extends Activity implements OnTouchListener {
         public void pause(){
 
             runflag = false;
+            if (vidView != null) {
+                vidView.suspend();
+            }
             while(true){
                 try{
                     t.join();
@@ -665,11 +764,16 @@ public class MainActivity extends Activity implements OnTouchListener {
 
         public void resume(){
             runflag = true;
+            if (vidView != null) {
+                vidView.resume();
+            }
             t = new Thread(this);
             t.start();
         }
 
     }
+
+
 
 }
 
