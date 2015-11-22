@@ -72,7 +72,7 @@ public class MainActivity extends Activity implements OnTouchListener {
     float cx_leftBall, cx_rightBall, cy_leftBall, cy_rightBall;
     public static final int SERVERPORT = 5000;
     static String ipaddr;
-    static String defaultIPaddr = "192.168.1.89";
+    static String defaultIPaddr = "192.168.1.204";
     String message ="";
     InetAddress serverAddr;
     DatagramSocket datagramSocket;
